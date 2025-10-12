@@ -10,10 +10,10 @@ module stimulus ();
     ALU ALU_module(.in1(A),.in2(B),.alu_control(ALUControl),.zero_flag(ZERO),.alu_result(ALUResult));
 
     // Setting up waveform
-    initial
-    begin
+    initial begin
         $dumpfile("output_wave.vcd");
-        $dumpvars(0,stimulus);
+        // Restrict to top-level tb signals
+        $dumpvars(0, stimulus.A, stimulus.B, stimulus.ALUControl, ALUResult, ZERO);
     end
 
     // Monitoring changing values
@@ -32,8 +32,10 @@ module stimulus ();
     #20 A = 42; B = 23;  ALUControl = 4'b0100;
     end
 
-    // Finish after 150 clock cycles
-    initial
-    #150 $finish;
+    // Finish after 150 time units
+    initial begin
+        #100 $dumpoff;
+        #50  $finish;
+    end
 
 endmodule

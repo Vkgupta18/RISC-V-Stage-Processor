@@ -24,8 +24,10 @@ module ALU (
     output reg [31:0] alu_result,
     output reg zero_flag
 );
-    always @(*)
-    begin
+    always @(*) begin
+        // Default outputs to avoid latches
+        alu_result = 32'd0;
+        zero_flag = 1'b0;
         // Operating based on control input
         case(alu_control)
 

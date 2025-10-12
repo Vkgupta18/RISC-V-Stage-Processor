@@ -26,8 +26,17 @@ module stimulus;
     
     initial begin
         $dumpfile("output_wave.vcd");
-        $dumpvars(0, stimulus);
-        
+        // Limit VCD scope to essential signals to reduce file size
+        $dumpvars(0, stimulus.clock, stimulus.reset, stimulus.cycle_count);
+        $dumpvars(0, stimulus.test_processor.PC, stimulus.test_processor.instruction_code);
+        // Dump only registers we verify
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[5]);
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[6]);
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[7]);
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[8]);
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[9]);
+        $dumpvars(0, stimulus.test_processor.datapath_module.reg_file_module.reg_memory[10]);
+
         clock = 0;
         reset = 1;
         cycle_count = 0;
@@ -76,5 +85,9 @@ module stimulus;
         $display("==========================================\n");
         
         $finish;
+    end
+    // Stop waveform dumping earlier to reduce file size
+    initial begin
+        #200 $dumpoff;
     end
 endmodule

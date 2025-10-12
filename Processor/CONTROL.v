@@ -24,6 +24,7 @@ module CONTROL(
     localparam AUIPC   = 7'b0010111;
 
     always @(*) begin
+        // Default outputs to avoid latches and ensure safe fallbacks
         // Default values
         regwrite = 1'b0;
         alu_src = 1'b0;

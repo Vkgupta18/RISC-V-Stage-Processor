@@ -22,7 +22,10 @@ module stimulus ();
 
     initial begin
         $dumpfile("output_wave.vcd");
-        $dumpvars(0,stimulus);
+        // Limit waveform scope to key signals
+        $dumpvars(0, stimulus.clock, stimulus.reset);
+        $dumpvars(0, DATAPATH_module.read_reg_num1, DATAPATH_module.read_reg_num2, DATAPATH_module.write_reg);
+        $dumpvars(0, DATAPATH_module.zero_flag);
     end
 
     initial begin
@@ -52,7 +55,9 @@ module stimulus ();
         forever #10 clock = ~clock;
     end
 
-    initial
-        #200 $finish;
+    initial begin
+        #120 $dumpoff; // stop dumping early to shrink VCD
+        #80  $finish;
+    end
     
 endmodule

@@ -9,10 +9,10 @@ module stimulus ();
     INST_MEM INST_MEM_module(PC,RESET,INST_CODE);
 
     // Setting up waveform
-    initial
-    begin
+    initial begin
         $dumpfile("INST_MEM_output_wave.vcd");
-        $dumpvars(0,stimulus);
+        // Restrict to key signals
+        $dumpvars(0, stimulus.PC, stimulus.RESET, INST_CODE);
     end
 
     initial
@@ -29,8 +29,10 @@ module stimulus ();
         #20 PC = 32'd12;
     end
 
-    // Terminating after 150 clock cycles
-    initial
-    #150 $finish;
+    // Terminating after 150 time units
+    initial begin
+        #100 $dumpoff;
+        #50  $finish;
+    end
 
 endmodule

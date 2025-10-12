@@ -23,8 +23,9 @@ module DATA_MEM(
             memory[i] = 8'b0;
     end
     
-    // Memory Read Logic
+    // Memory Read Logic (combinational)
     always @(*) begin
+        read_data = 32'b0; // default
         if (mem_read) begin
             case(funct3)
                 3'b000: // LB (Load Byte - sign extended)
@@ -40,12 +41,10 @@ module DATA_MEM(
                 default:
                     read_data = 32'b0;
             endcase
-        end else begin
-            read_data = 32'b0;
         end
     end
     
-    // Memory Write Logic
+    // Memory Write Logic (sequential)
     always @(posedge clock) begin
         if (mem_write) begin
             case(funct3)

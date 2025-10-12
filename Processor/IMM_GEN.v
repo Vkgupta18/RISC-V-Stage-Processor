@@ -10,6 +10,8 @@ module IMM_GEN(
     wire [6:0] opcode = instruction[6:0];
     
     always @(*) begin
+        // Default to zero to avoid latch inference
+        immediate = 32'b0;
         case(opcode)
             // I-type: ADDI, SLTI, XORI, ORI, ANDI, SLLI, SRLI, SRAI, JALR, Load
             7'b0010011, 7'b0000011, 7'b1100111: 

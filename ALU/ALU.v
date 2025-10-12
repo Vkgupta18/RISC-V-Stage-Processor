@@ -24,8 +24,10 @@ module ALU (
     output reg [31:0] alu_result,
     output reg zero_flag
 );
-    always @(*)
-    begin
+    always @(*) begin
+        // Default outputs to avoid latches
+        alu_result = 32'd0;
+        zero_flag = 1'b0;
         // Operating based on control input
         case(alu_control)
 
@@ -39,18 +41,16 @@ module ALU (
             else
             alu_result = 0;
         end
-        4'b0011: alu_result = in1<<in2;
-        4'b0101: alu_result = in1>>in2;
+        4'b0011: alu_result = in1 << in2[4:0];
+        4'b0101: alu_result = in1 >> in2[4:0];
         4'b0110: alu_result = in1*in2;
         4'b0111: alu_result = in1^in2;
 
+        default: alu_result = 32'd0;
         endcase
 
         // Setting Zero_flag if ALU_result is zero
-        if (alu_result == 0)
-            zero_flag = 1'b1;
-        else
-            zero_flag = 1'b0;
+        zero_flag = (alu_result == 0);
         
     end
 endmodule

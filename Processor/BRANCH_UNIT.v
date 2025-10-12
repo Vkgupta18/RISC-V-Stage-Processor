@@ -22,7 +22,7 @@ module BRANCH_UNIT(
     
     // Branch condition evaluation
     always @(*) begin
-        branch_taken = 1'b0;
+        branch_taken = 1'b0; // default to avoid latches
         
         if (jump) begin
             branch_taken = 1'b1;  // JAL/JALR always taken
