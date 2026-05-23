@@ -1,384 +1,442 @@
-# 🚀 RISC-V Processor Implementation
+# 🚀 RISC-V Single-Cycle Processor
 
-> *A complete 32-bit RISC-V processor design with support for RV32I base instruction set*
+> A fully functional 32-bit single-cycle RISC-V processor implementing the **RV32I** base integer instruction set, designed in Verilog HDL.
 
-[![Verilog](https://img.shields.io/badge/Language-Verilog-blue.svg)](https://en.wikipedia.org/wiki/Verilog)
-[![RISC-V](https://img.shields.io/badge/ISA-RISC--V-green.svg)](https://riscv.org/)
+[![Verilog](https://img.shields.io/badge/HDL-Verilog-blue.svg)](https://en.wikipedia.org/wiki/Verilog)
+[![ISA](https://img.shields.io/badge/ISA-RISC--V%20RV32I-green.svg)](https://riscv.org/)
+[![Architecture](https://img.shields.io/badge/Architecture-Single--Cycle-orange.svg)](#architecture)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## 📖 Overview
 
-This project implements a **32-bit RISC-V processor** in Verilog HDL, featuring a modular single-cycle architecture that supports the RV32I base integer instruction set. The processor can execute arithmetic, logical, memory access, and control flow instructions, making it suitable for educational purposes and embedded system applications.
+This project implements a **modular, single-cycle RISC-V processor** from the ground up in synthesizable Verilog. The processor executes one instruction per clock cycle and supports the complete RV32I base instruction set — including arithmetic, logical, memory access, branching, and jump operations.
 
-The design emphasizes modularity, with each functional unit (ALU, Control Unit, Register File, etc.) implemented as separate, testable components that integrate seamlessly into the complete processor pipeline.
+The design follows a bottom-up development methodology: each functional unit (ALU, Register File, Control Unit, etc.) was first designed and verified independently, then integrated into the complete processor datapath.
 
-## 🎯 Motivation
+### Key Highlights
 
-This project was developed to:
-- **Understand CPU architecture** at the hardware level by implementing a fully functional processor from scratch
-- **Learn RISC-V ISA** - one of the most important open-source instruction set architectures
-- **Practice RTL design** using Verilog HDL with proper coding standards
-- **Explore digital design principles** including datapath construction, control logic, and memory systems
-- **Create a foundation** for future enhancements like pipelining, caching, and performance optimizations
+- **Complete RV32I support** — 40+ instructions across all 6 instruction formats (R, I, S, B, U, J)
+- **Modular architecture** — 10 independently testable Verilog modules
+- **Automated verification** — self-checking testbench with PASS/FAIL reporting
+- **Byte-addressable memory** — supports LB/LH/LW and their unsigned variants
+- **Branch & jump logic** — dedicated Branch Unit with BEQ, BNE, BLT, BGE, BLTU, BGEU, JAL, JALR
 
-## ✨ Features
+---
 
-### Core Components
+## 🏗️ Architecture
 
-#### 🧮 **Arithmetic Logic Unit (ALU)**
-- 32-bit operand support with 9 operations:
-  - Bitwise operations: AND, OR, XOR
-  - Arithmetic: ADD, SUB, MUL
-  - Shift operations: SLL (Shift Left Logical), SRL (Shift Right Logical)
-  - Comparison: SLT (Set on Less Than)
-- Zero flag generation for branch condition evaluation
-- 4-bit operation control encoding
+The processor follows the classic single-cycle RISC-V datapath where all stages — Instruction Fetch, Decode, Execute, Memory Access, and Write-Back — complete within a single clock cycle.
 
-#### 📝 **Register File**
-- 32 general-purpose registers (x0-x31), each 32-bits wide
-- x0 hardwired to zero (RISC-V convention)
-- Dual read ports (rs1, rs2) for simultaneous access
-- Single write port with enable signal
-- Positive edge-triggered write operations
+### Block Diagram
 
-#### 🎛️ **Control Unit**
-- Complete instruction decoder for RV32I ISA
-- Supports multiple instruction formats:
-  - **R-type**: Register-register operations
-  - **I-type**: Immediate operations and loads
-  - **S-type**: Store instructions
-  - **B-type**: Branch instructions
-  - **U-type**: Upper immediate (LUI, AUIPC)
-  - **J-type**: Jump instructions (JAL, JALR)
-- Generates control signals: `regwrite`, `alu_src`, `mem_read`, `mem_write`, `mem_to_reg`, `branch`, `jump`
-
-#### 🔢 **Immediate Generator (IMM_GEN)**
-- Extracts and sign-extends immediate values from instructions
-- Handles all 5 instruction formats (I, S, B, U, J)
-- Proper bit manipulation for RISC-V encoding standards
-
-#### 🗂️ **Instruction Memory (INST_MEM)**
-- Byte-addressable memory with 32 locations
-- Hardcoded test programs for verification
-- Outputs 32-bit instruction words to the processor
-
-#### 💾 **Data Memory (DATA_MEM)**
-- 256 bytes of byte-addressable memory
-- Supports multiple access sizes:
-  - LW/SW: Word (32-bit)
-  - LH/SH: Halfword (16-bit)
-  - LB/SB: Byte (8-bit)
-  - Unsigned variants: LHU, LBU
-- Clock-synchronized write operations
-
-#### 🔀 **Branch Unit**
-- Evaluates branch conditions for all branch types:
-  - BEQ (Branch if Equal)
-  - BNE (Branch if Not Equal)
-  - BLT/BLTU (Branch if Less Than - signed/unsigned)
-  - BGE/BGEU (Branch if Greater or Equal - signed/unsigned)
-- Calculates branch target addresses
-- Handles JAL and JALR jump instructions
-
-#### 🔄 **Instruction Fetch Unit (IFU)**
-- Program Counter (PC) management
-- PC increment logic (PC + 4)
-- Branch/jump target handling
-- Instruction memory interface
-
-#### 🔗 **Datapath**
-- Connects Register File and ALU
-- Multiplexer for ALU source selection (register vs. immediate)
-- Write-back multiplexer (ALU result vs. memory data)
-- Data forwarding paths
-
-### Instruction Set Support
-
-| Category | Instructions Supported |
-|----------|------------------------|
-| **Arithmetic** | ADD, ADDI, SUB, MUL |
-| **Logical** | AND, ANDI, OR, ORI, XOR, XORI |
-| **Shift** | SLL, SLLI, SRL, SRLI |
-| **Comparison** | SLT, SLTI |
-| **Memory Load** | LW, LH, LB, LHU, LBU |
-| **Memory Store** | SW, SH, SB |
-| **Branch** | BEQ, BNE, BLT, BGE, BLTU, BGEU |
-| **Jump** | JAL, JALR |
-| **Upper Immediate** | LUI, AUIPC |
-
-## 🖼️ Block Diagram
-
-<!-- Insert the processor architecture block diagram here -->
 ![RISC-V Processor Architecture](images/Processor.png)
 
-*Figure 1: Complete processor architecture showing all major components and their interconnections*
+*Figure 1: Complete processor architecture showing all major components and their interconnections.*
+
+### Datapath Flow
+
+```
+┌─────────┐    ┌──────────┐    ┌─────────┐    ┌──────────┐    ┌──────────┐
+│  FETCH   │───▶│  DECODE  │───▶│ EXECUTE │───▶│  MEMORY  │───▶│WRITE-BACK│
+│  (IFU)   │    │(CONTROL) │    │  (ALU)  │    │(DATA_MEM)│    │(REG_FILE)│
+│          │    │(IMM_GEN) │    │         │    │          │    │          │
+│          │    │(REG_FILE)│    │         │    │          │    │          │
+└─────────┘    └──────────┘    └─────────┘    └──────────┘    └──────────┘
+      ▲                                                             │
+      └─────────────────────────────────────────────────────────────┘
+                         (Branch/Jump Feedback via BRANCH_UNIT)
+```
+
+### Signal Interconnection
+
+```
+                        ┌─────────────────────────────┐
+                        │        PROCESSOR.v           │
+                        │       (Top-Level)            │
+                        └─────────────────────────────┘
+                                     │
+          ┌──────────────────────────┼──────────────────────────┐
+          │                          │                          │
+    ┌─────▼─────┐            ┌───────▼──────┐          ┌───────▼──────┐
+    │   IFU.v   │◀──branch──▶│ BRANCH_UNIT.v│◀──alu───▶│ DATAPATH.v   │
+    │           │   target   │              │  result   │              │
+    │ ┌───────┐ │            └──────────────┘           │ ┌──────────┐ │
+    │ │INST_  │ │                                       │ │ REG_FILE │ │
+    │ │MEM.v  │ │           ┌──────────────┐            │ │          │ │
+    │ └───────┘ │           │  CONTROL.v   │──signals──▶│ ├──────────┤ │
+    └───────────┘           └──────┬───────┘            │ │  ALU.v   │ │
+          │                        │                    │ │          │ │
+          │ instruction    ┌───────▼──────┐             │ ├──────────┤ │
+          └───────────────▶│  IMM_GEN.v   │──immediate─▶│ │DATA_MEM.v│ │
+                           └──────────────┘             │ └──────────┘ │
+                                                        └──────────────┘
+```
+
+---
+
+## 🧩 Module Descriptions
+
+### Top-Level: `PROCESSOR.v`
+
+Instantiates and wires together all sub-modules. Takes only `clock` and `reset` as inputs.
+
+---
+
+### Instruction Fetch Unit: `IFU.v`
+
+| Port | Direction | Width | Description |
+|------|-----------|-------|-------------|
+| `clock` | Input | 1 | System clock |
+| `reset` | Input | 1 | Synchronous reset |
+| `branch_taken` | Input | 1 | Branch condition met |
+| `jump` | Input | 1 | JAL/JALR signal |
+| `branch_target` | Input | 32 | Target address |
+| `Instruction_Code` | Output | 32 | Fetched instruction |
+| `PC_out` | Output | 32 | Current program counter |
+
+- Manages the **Program Counter (PC)** with automatic PC+4 increment
+- Supports branch/jump target redirection
+- Wraps PC at 4KB boundary (`0xFFC`)
+- Instantiates `INST_MEM` for instruction storage
+
+---
+
+### Instruction Memory: `INST_MEM.v`
+
+- **4 KB** byte-addressable instruction memory (`reg [7:0] Memory [0:4095]`)
+- Word-aligned reads with automatic `PC[11:2]` masking
+- Little-endian byte ordering
+- Pre-loaded test program via `initial` block
+
+---
+
+### Control Unit: `CONTROL.v`
+
+Fully combinational instruction decoder. Generates all datapath control signals from `opcode`, `funct3`, and `funct7` fields.
+
+| Opcode | Type | Instructions |
+|--------|------|-------------|
+| `0110011` | R-type | ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND, MUL |
+| `0010011` | I-type | ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI |
+| `0000011` | Load | LB, LH, LW, LBU, LHU |
+| `0100011` | Store | SB, SH, SW |
+| `1100011` | Branch | BEQ, BNE, BLT, BGE, BLTU, BGEU |
+| `1101111` | J-type | JAL |
+| `1100111` | I-type | JALR |
+| `0110111` | U-type | LUI |
+| `0010111` | U-type | AUIPC |
+
+**Generated control signals:**
+
+| Signal | Purpose |
+|--------|---------|
+| `alu_control[3:0]` | ALU operation select |
+| `regwrite` | Enable register write-back |
+| `alu_src` | ALU input2 source (0 = rs2, 1 = immediate) |
+| `mem_read` | Enable data memory read |
+| `mem_write` | Enable data memory write |
+| `mem_to_reg` | Write-back source (0 = ALU, 1 = memory) |
+| `branch` | Instruction is a branch |
+| `jump` | Instruction is JAL/JALR |
+| `alu_pc_src` | ALU input1 source (0 = rs1, 1 = PC for AUIPC) |
+
+---
+
+### Datapath: `DATAPATH.v`
+
+Connects the Register File, ALU, and Data Memory with three key multiplexers:
+
+1. **ALU Input1 MUX** — selects between `rs1` (default) and `PC` (for AUIPC)
+2. **ALU Input2 MUX** — selects between `rs2` (R-type) and `immediate` (I/S/U-type)
+3. **Write-Back MUX** — selects between `PC+4` (JAL/JALR), memory data (loads), or ALU result
+
+---
+
+### ALU: `ALU.v`
+
+32-bit Arithmetic Logic Unit with 12 operations:
+
+| ALU Control | Operation | Description |
+|-------------|-----------|-------------|
+| `0000` | AND | Bitwise AND |
+| `0001` | OR | Bitwise OR |
+| `0010` | ADD | Addition |
+| `0011` | SLL | Shift Left Logical |
+| `0100` | SUB | Subtraction |
+| `0101` | SRL | Shift Right Logical |
+| `0110` | MUL | Multiplication |
+| `0111` | XOR | Bitwise XOR |
+| `1000` | SLT | Set Less Than (signed) |
+| `1001` | SLTU | Set Less Than (unsigned) |
+| `1010` | SRA | Shift Right Arithmetic |
+| `1011` | PASS B | Pass-through input2 (for LUI) |
+
+Outputs a **zero flag** when `alu_result == 0`, used by the Branch Unit for BEQ/BNE evaluation.
+
+---
+
+### Register File: `REG_FILE.v`
+
+- **32 × 32-bit** general-purpose register array
+- **x0 hardwired to zero** — reads always return 0, writes are ignored
+- **Dual read ports** (combinational) + **single write port** (positive-edge triggered)
+- Registers initialized to `reg[i] = i` on reset for testing convenience
+
+---
+
+### Immediate Generator: `IMM_GEN.v`
+
+Extracts and sign-extends the immediate field from each instruction format:
+
+| Format | Immediate Bits | Used By |
+|--------|---------------|---------|
+| I-type | `inst[31:20]` | ADDI, SLTI, loads, JALR |
+| S-type | `inst[31:25], inst[11:7]` | SB, SH, SW |
+| B-type | `inst[31], inst[7], inst[30:25], inst[11:8], 0` | BEQ, BNE, BLT, BGE |
+| U-type | `inst[31:12], 12'b0` | LUI, AUIPC |
+| J-type | `inst[31], inst[19:12], inst[20], inst[30:21], 0` | JAL |
+
+---
+
+### Branch Unit: `BRANCH_UNIT.v`
+
+Dedicated unit for branch condition evaluation and target address calculation:
+
+- **Branch target**: `PC + immediate` for JAL and B-type instructions
+- **JALR target**: `(rs1 + immediate) & ~1` (LSB cleared per RISC-V spec)
+- Evaluates all 6 branch conditions using ALU result and zero flag
+
+---
+
+### Data Memory: `DATA_MEM.v`
+
+- **256 bytes** of byte-addressable data memory (`reg [7:0] memory [0:255]`)
+- Little-endian byte ordering
+- Supports all load/store widths via `funct3`:
+
+| funct3 | Load | Store |
+|--------|------|-------|
+| `000` | LB (sign-extended) | SB |
+| `001` | LH (sign-extended) | SH |
+| `010` | LW | SW |
+| `100` | LBU (zero-extended) | — |
+| `101` | LHU (zero-extended) | — |
+
+---
+
+## 🧪 Verification
+
+### Testbench: `Processor_tb.v`
+
+The testbench runs a hardcoded test program and performs **automated verification** with PASS/FAIL reporting:
+
+**Test Program:**
+```
+Addr  Instruction             Description
+────  ───────────────────────  ──────────────────────────────
+0x00  ADDI x5, x0, 10         x5 = 10
+0x04  ADDI x6, x0, 20         x6 = 20
+0x08  ADD  x7, x5, x6         x7 = 30  (10 + 20)
+0x0C  SW   x7, 0(x0)          mem[0] = 30
+0x10  LW   x8, 0(x0)          x8 = mem[0] = 30
+0x14  BEQ  x5, x5, +8         branch taken (skip next)
+0x18  ADDI x9, x0, 99         ← SKIPPED by branch
+0x1C  ADDI x10, x0, 42        x10 = 42
+```
+
+**Verified Results:**
+
+| Test | Instruction | Expected | Status |
+|------|-------------|----------|--------|
+| ADDI | `x5 = 10` | `0x0000000A` | ✅ PASS |
+| ADDI | `x6 = 20` | `0x00000014` | ✅ PASS |
+| ADD  | `x7 = 30` | `0x0000001E` | ✅ PASS |
+| SW/LW | `x8 = 30` | `0x0000001E` | ✅ PASS |
+| BEQ  | `x10 = 42` (x9 ≠ 99) | `0x0000002A` | ✅ PASS |
+
+### Simulation Waveform
 
 ![Processor Waveform](images/Waveform.png)
 
-*Figure 2: Simulation waveforms showing instruction execution*
+*Figure 2: GTKWave output showing instruction execution, PC progression, and register write-back.*
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-To simulate and test this processor, you'll need:
-- **Icarus Verilog** (iverilog) - for compilation
-- **GTKWave** - for waveform visualization
-- Alternatively: **ModelSim**, **Vivado**, or any Verilog simulator
+| Tool | Purpose | Install |
+|------|---------|---------|
+| [Icarus Verilog](http://iverilog.icarus.com/) | Compilation & simulation | `apt install iverilog` / `brew install icarus-verilog` / [Windows binary](http://bleyer.org/icarus/) |
+| [GTKWave](http://gtkwave.sourceforge.net/) | Waveform viewing | `apt install gtkwave` / `brew install gtkwave` |
 
-### Installation
+> Alternatively, you can use **ModelSim**, **Vivado**, or any Verilog simulator.
 
-```bash
-# Install Icarus Verilog (Ubuntu/Debian)
-sudo apt-get install iverilog gtkwave
-
-# Install Icarus Verilog (macOS)
-brew install icarus-verilog gtkwave
-
-# For Windows, download from:
-# http://bleyer.org/icarus/
-```
-
-### Running the Simulation
-
-#### Option 1: Compile and Run the Complete Processor
+### Clone & Run
 
 ```bash
-# Navigate to the Processor folder
-cd "Processor"
+# Clone the repository
+git clone https://github.com/Vkgupta18/RISC-V-Processor.git
+cd RISC-V-Processor
 
-# Compile the testbench (includes all modules)
-iverilog -o processor-sim Processor_tb.v
+# Navigate to the integrated processor
+cd Processor
 
-# Run the simulation
-vvp processor-sim
+# Compile (all modules are `include-d from Processor_tb.v)
+iverilog -o processor_sim Processor_tb.v
+
+# Run simulation
+vvp processor_sim
 
 # View waveforms
 gtkwave output_wave.vcd
 ```
 
-#### Option 2: Test Individual Modules
+### Testing Individual Modules
 
 ```bash
-# Example: Testing the ALU
-cd "ALU"
-iverilog -o alu-sim ALU_testbench.v
-vvp alu-sim
-gtkwave output_wave.vcd
+# ALU unit test
+cd ALU
+iverilog -o alu_sim ALU_testbench.v
+vvp alu_sim
 
-# Example: Testing the Register File
-cd "../Register file"
-iverilog -o regfile-sim "Register File_tb.v"
-vvp regfile-sim
-gtkwave output_wave.vcd
+# Register File unit test
+cd "Register file"
+iverilog -o regfile_sim "Register File_tb.v"
+vvp regfile_sim
 
-# Example: Testing the Datapath
-cd "../Datapath"
-iverilog -o datapath-sim Datapath_tb.v
-vvp datapath-sim
-gtkwave output_wave.vcd
+# Datapath integration test
+cd Datapath
+iverilog -o datapath_sim Datapath_tb.v
+vvp datapath_sim
 ```
 
-#### Option 3: Using PowerShell (Windows)
-
-```powershell
-# Navigate to Processor folder
-cd "Processor"
-
-# Compile and simulate
-iverilog -o processor-sim.exe Processor_tb.v
-.\processor-sim.exe
-
-# View waveforms
-gtkwave output_wave.vcd
-```
+---
 
 ## 📁 Project Structure
 
 ```
 RISC-V-Processor/
+├── README.md
 │
-├── 📄 README.md                      # This file
-├── 📄 .github/
-│   └── copilot-instructions.md       # Development guidelines
+├── Processor/                     # ── Complete Integrated Processor ──
+│   ├── PROCESSOR.v                #    Top-level module
+│   ├── Processor_tb.v             #    Self-checking testbench
+│   ├── IFU.v                      #    Instruction Fetch Unit
+│   ├── INST_MEM.v                 #    Instruction Memory (4 KB)
+│   ├── CONTROL.v                  #    Control Unit / Instruction Decoder
+│   ├── DATAPATH.v                 #    Datapath (MUXes + wiring)
+│   ├── REG_FILE.v                 #    Register File (32 × 32-bit)
+│   ├── ALU.v                      #    Arithmetic Logic Unit
+│   ├── IMM_GEN.v                  #    Immediate Generator
+│   ├── BRANCH_UNIT.v              #    Branch Condition Evaluator
+│   ├── DATA_MEM.v                 #    Data Memory (256 bytes)
+│   ├── VERIFICATION_REPORT.txt    #    Test results summary
+│   └── output_wave.vcd            #    Simulation waveforms
 │
-├── 📁 ALU/                           # Arithmetic Logic Unit
-│   ├── ALU.v                         # ALU implementation
-│   ├── ALU_testbench.v               # ALU test cases
-│   └── output_wave.vcd               # Simulation waveforms
+├── ALU/                           # ── Standalone ALU Tests ──
+│   ├── ALU.v
+│   └── ALU_testbench.v
 │
-├── 📁 Control Unit/                  # Instruction Decoder
-│   └── CONTROL.v                     # Control signal generation
+├── Control Unit/                  # ── Standalone Control Unit ──
+│   └── CONTROL.v
 │
-├── 📁 Register file/                 # Register File Module
-│   ├── REG_FILE.v                    # 32x32-bit register array
-│   ├── Register File_tb.v            # Register file testbench
-│   └── output_wave.vcd
+├── Register file/                 # ── Standalone Register File Tests ──
+│   ├── REG_FILE.v
+│   └── Register File_tb.v
 │
-├── 📁 Instruction Fetch Unit/        # Program Counter & Instruction Memory
-│   ├── IFU.v                         # Instruction fetch logic
-│   ├── IFU_tb.v                      # IFU testbench
-│   ├── INST_MEM.v                    # Instruction memory
-│   ├── INST_MEM_tb.v                 # Memory testbench
-│   └── output_wave.vcd
+├── Instruction Fetch Unit/        # ── Standalone IFU Tests ──
+│   ├── IFU.v
+│   ├── IFU_tb.v
+│   ├── INST_MEM.v
+│   └── INST_MEM_tb.v
 │
-├── 📁 Datapath/                      # Register File + ALU Integration
-│   ├── DATAPATH.v                    # Datapath connections
-│   ├── Datapath_tb.v                 # Datapath testbench
-│   └── output_wave.vcd
+├── Datapath/                      # ── Standalone Datapath Tests ──
+│   ├── DATAPATH.v
+│   └── Datapath_tb.v
 │
-├── 📁 Processor/                     # Complete Processor Integration
-│   ├── PROCESSOR.v                   # Top-level module
-│   ├── Processor_tb.v                # Full processor testbench
-│   ├── ALU.v                         # ALU (copied for integration)
-│   ├── CONTROL.v                     # Control unit
-│   ├── DATAPATH.v                    # Datapath
-│   ├── IFU.v                         # Instruction fetch unit
-│   ├── INST_MEM.v                    # Instruction memory
-│   ├── REG_FILE.v                    # Register file
-│   ├── IMM_GEN.v                     # Immediate generator
-│   ├── BRANCH_UNIT.v                 # Branch logic
-│   ├── DATA_MEM.v                    # Data memory
-│   └── output_wave.vcd               # Complete simulation waveforms
+├── Roadmap/                       # ── Development Roadmap ──
+│   ├── riscv_processor_roadmap_part1.md
+│   ├── riscv_processor_roadmap_part2.md
+│   └── riscv_processor_roadmap_part3.md
 │
-└── 📁 images/                        # Documentation images
-    ├── Processor.png                 # Architecture diagram
-    ├── RISCV.png                     # RISC-V logo/reference
-    └── Waveform.png                  # Sample waveforms
+└── images/                        # ── Documentation Assets ──
+    ├── Processor.png              #    Architecture block diagram
+    ├── Waveform.png               #    Simulation waveform capture
+    └── RISCV.png                  #    RISC-V reference image
 ```
 
-### Module Descriptions
+---
 
-| Module | Description |
-|--------|-------------|
-| `PROCESSOR.v` | Top-level integration connecting IFU → CONTROL → DATAPATH |
-| `IFU.v` | Manages Program Counter and fetches instructions |
-| `INST_MEM.v` | Stores program instructions (32 locations) |
-| `CONTROL.v` | Decodes instructions and generates control signals |
-| `DATAPATH.v` | Connects Register File, ALU, and multiplexers |
-| `REG_FILE.v` | 32 registers with dual read/single write ports |
-| `ALU.v` | Performs arithmetic and logical operations |
-| `IMM_GEN.v` | Extracts and sign-extends immediate values |
-| `BRANCH_UNIT.v` | Evaluates branch conditions and calculates targets |
-| `DATA_MEM.v` | Byte-addressable data memory (256 bytes) |
+## 🔮 Roadmap
 
-## 🧪 Testing & Verification
+### ✅ Phase 1 — Single-Cycle Processor (Complete)
+- [x] RV32I base instruction set (R, I, S, B, U, J types)
+- [x] Immediate Generator for all formats
+- [x] Byte-addressable Data Memory with LB/LH/LW support
+- [x] Branch Unit with all 6 branch conditions + JAL/JALR
+- [x] AUIPC and LUI upper-immediate support
+- [x] Automated testbench with PASS/FAIL verification
 
-### Testing Methodology
+### 🔜 Phase 2 — Assembly-Based Testing
+- [ ] Use RISC-V GNU Toolchain to assemble programs
+- [ ] Load programs via `$readmemh` from hex files
+- [ ] Build a comprehensive compliance test suite
+- [ ] Self-checking testbenches with expected value tables
 
-Each module includes a dedicated testbench that verifies its functionality:
+### 🔜 Phase 3 — 5-Stage Pipelined Processor
+- [ ] Pipeline registers (IF/ID, ID/EX, EX/MEM, MEM/WB)
+- [ ] Hazard Detection Unit (stall on load-use hazards)
+- [ ] Data Forwarding / Bypassing Unit
+- [ ] Branch Prediction (static → dynamic)
+- [ ] Pipeline flush on mispredicted branches
 
-1. **Unit Testing**: Individual modules tested in isolation
-   - ALU operations verified with various input combinations
-   - Register file tested for read/write operations
-   - Memory modules tested for correct addressing
+### 🔜 Phase 4 — ISA Extensions
+- [ ] **M Extension** — Integer multiply/divide (MUL, DIV, REM)
+- [ ] **Zicsr Extension** — Control & Status Registers
+- [ ] Exception & interrupt handling
+- [ ] Privilege levels (Machine mode)
 
-2. **Integration Testing**: Processor-level testing with sample programs
-   - Test programs hardcoded in instruction memory
-   - Testbenches simulate clock cycles and monitor register changes
-   - Waveform analysis using GTKWave
+### 🔜 Phase 5 — Memory Hierarchy & Peripherals
+- [ ] Instruction & Data Caches
+- [ ] Memory-Mapped I/O (UART, GPIO, Timer)
+- [ ] FPGA synthesis targeting Xilinx / Intel FPGAs
 
-### Sample Test Program
+---
 
-The instruction memory contains test instructions like:
+## 🎯 Design Decisions
 
-```verilog
-// Example: ADD x3, x1, x2
-memory[0] = 8'b00000000;  // funct7 (lower byte)
-memory[1] = 8'b00100000;  // rs2 = 2
-memory[2] = 8'b00001000;  // rs1 = 1, funct3 = 000
-memory[3] = 8'b10110011;  // rd = 3, opcode = 0110011
+| Decision | Rationale |
+|----------|-----------|
+| Single-cycle first | Learn the fundamentals before optimizing with pipelining |
+| Separate Branch Unit | Clean separation of concerns; branch logic isolated from ALU |
+| Byte-addressable memory | Matches RISC-V specification; supports LB/LH/LW natively |
+| `include`-based integration | Simple compilation — `iverilog Processor_tb.v` compiles everything |
+| Hardcoded test program | Quick iteration during development; hex-file loading planned next |
+| x0 hardwired in reads *and* writes | Belt-and-suspenders — reads return 0, writes to x0 are also blocked |
 
-// More instructions follow...
-```
-
-### Verification Approach
-
-- **Clock Period**: 40ns (25 MHz)
-- **Reset Duration**: 50ns initial high
-- **Simulation Time**: 300-500ns depending on test
-- **Waveform Analysis**: All signals dumped to VCD files
-- **Expected Results**: Verified by observing register file values and memory contents
-
-### Running Specific Tests
-
-```bash
-# Test arithmetic operations
-cd Processor
-iverilog -o test Processor_tb.v
-vvp test
-
-# Verify register values after execution
-# Check output_wave.vcd in GTKWave
-gtkwave output_wave.vcd
-```
-
-## 🔮 Future Improvements
-
-### Phase 1: Enhanced Verification ✅ (Completed)
-- [x] Complete RV32I base instruction set
-- [x] Implement I-type, Load/Store, Branch, Jump instructions
-- [x] Add Immediate Generator
-- [x] Add Data Memory module
-- [x] Add Branch Unit
-
-### Phase 2: Assembly-Based Testing (Planned)
-- [ ] Transition to RISC-V assembly workflow
-- [ ] Use RISC-V GNU Toolchain for program assembly
-- [ ] Implement `$readmemh` for loading machine code from files
-- [ ] Develop self-checking testbenches with PASS/FAIL indicators
-
-### Phase 3: Performance Optimization (Planned)
-- [ ] Convert to **5-stage pipeline** (IF, ID, EX, MEM, WB)
-- [ ] Add pipeline registers between stages
-- [ ] Implement **Hazard Detection Unit**
-- [ ] Add **data forwarding (bypassing)** logic
-- [ ] Implement **pipeline stalling** for load-use hazards
-- [ ] Add **branch prediction** (static or dynamic)
-
-### Phase 4: Extended Instruction Sets (Planned)
-- [ ] **RV32M Extension**: Multiplication and Division
-- [ ] **RV32A Extension**: Atomic operations
-- [ ] **RV32F Extension**: Single-precision floating-point
-- [ ] **Zicsr Extension**: Control and Status Registers
-
-### Phase 5: Memory Hierarchy (Planned)
-- [ ] Implement **Instruction Cache** (I-Cache)
-- [ ] Implement **Data Cache** (D-Cache)
-- [ ] Add cache coherency protocols
-- [ ] Implement **Memory-Mapped I/O**
-- [ ] Add peripheral interfaces (UART, GPIO, Timer)
-
-### Phase 6: Advanced Features (Planned)
-- [ ] Add interrupt and exception handling
-- [ ] Implement privilege levels (Machine, Supervisor, User)
-- [ ] Add virtual memory support (MMU/TLB)
-- [ ] Performance counters and profiling
-- [ ] FPGA synthesis and implementation
-
-## 🤝 Contributors
-
-- **[Vinit Kumar Gupta]** - *Initial development and architecture design*
-
-*Want to contribute? Fork the repository and submit a pull request!*
+---
 
 ## 📚 References
 
-- [RISC-V Instruction Set Manual](https://riscv.org/technical/specifications/)
-- [RISC-V ISA Simulator (Spike)](https://github.com/riscv-software-src/riscv-isa-sim)
-- [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain)
-- [Computer Organization and Design RISC-V Edition](https://www.elsevier.com/books/computer-organization-and-design-risc-v-edition/patterson/978-0-12-812275-4)
+- [RISC-V ISA Specification (Volume 1)](https://riscv.org/technical/specifications/) — The official unprivileged spec
+- [Computer Organization and Design: RISC-V Edition](https://www.elsevier.com/books/computer-organization-and-design-risc-v-edition/patterson/978-0-12-812275-4) — Patterson & Hennessy
+- [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) — Cross-compiler for RISC-V
+- [RISC-V ISA Simulator (Spike)](https://github.com/riscv-software-src/riscv-isa-sim) — Reference simulator
+
+---
 
 ## 📄 License
 
-This project is licensed under the **MIT License** - see below for details:
+This project is licensed under the **MIT License**.
 
 ```
 MIT License
 
-Copyright (c) 2025 [Vinit18!]
+Copyright (c) 2025 Vinit Kumar Gupta
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -401,21 +459,10 @@ SOFTWARE.
 
 ---
 
-## 🌟 Acknowledgments
-
-Special thanks to:
-- The RISC-V Foundation for creating an open and accessible ISA
-- The open-source hardware community for inspiration and resources
-- All contributors who have helped improve this project
-
----
-
 <div align="center">
 
 **⭐ If you find this project useful, please consider giving it a star! ⭐**
 
 Made with ❤️ and Verilog
-
-[Report Bug](https://github.com/yourusername/risc-v-processor/issues) · [Request Feature](https://github.com/yourusername/risc-v-processor/issues) · [Documentation](https://github.com/yourusername/risc-v-processor/wiki)
 
 </div>

@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 `include "IFU.v"
 `include "CONTROL.v"
 `include "DATAPATH.v"
@@ -17,7 +18,7 @@ module PROCESSOR(
     
     // Control signals
     wire [3:0] alu_control;
-    wire regwrite, alu_src, mem_read, mem_write, mem_to_reg, branch, jump;
+    wire regwrite, alu_src, mem_read, mem_write, mem_to_reg, branch, jump, alu_pc_src;
     
     // Immediate value
     wire [31:0] immediate;
@@ -56,10 +57,10 @@ module PROCESSOR(
         mem_write,
         mem_to_reg,
         branch,
-        jump
+        jump,
+        alu_pc_src
     );
 
-    // Datapath
     DATAPATH datapath_module(
         instruction_code[19:15], // rs1
         instruction_code[24:20], // rs2
@@ -67,16 +68,19 @@ module PROCESSOR(
         immediate,
         PC,
         alu_src,
+        alu_pc_src,              // PC as ALU input1 for AUIPC
         alu_control,
         regwrite,
         mem_read,
         mem_write,
         mem_to_reg,
+        jump,                    // For PC+4 write-back
         instruction_code[14:12], // funct3
         clock,
         reset,
         zero_flag,
-        alu_result
+        alu_result,
+        rs1_data              // rs1 value for JALR
     );
     
     // Branch Unit
@@ -84,6 +88,7 @@ module PROCESSOR(
         PC,
         immediate,
         rs1_data,
+        instruction_code[6:0],   // opcode (to distinguish JAL from JALR)
         instruction_code[14:12], // funct3
         branch,
         jump,

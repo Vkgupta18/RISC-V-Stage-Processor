@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 Branch Unit evaluates branch conditions and calculates target addresses
 */
@@ -6,6 +7,7 @@ module BRANCH_UNIT(
     input [31:0] PC,
     input [31:0] immediate,
     input [31:0] rs1_data,      // For JALR
+    input [6:0] opcode,         // To distinguish JAL from JALR
     input [2:0] funct3,
     input branch,
     input jump,
@@ -16,7 +18,7 @@ module BRANCH_UNIT(
 );
 
     // Branch target calculation
-    assign branch_target = (funct3 == 3'b000 && jump) ? // JALR
+    assign branch_target = (opcode == 7'b1100111) ?           // JALR opcode
                           (rs1_data + immediate) & ~32'b1 :  // Clear LSB
                           (PC + immediate);                   // JAL, branches
     

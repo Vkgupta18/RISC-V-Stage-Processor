@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 Data Memory module for Load/Store instructions
 Byte-addressable memory with 256 bytes
@@ -15,6 +16,7 @@ module DATA_MEM(
     output reg [31:0] read_data
 );
     reg [7:0] memory [0:255];  // 256 bytes of memory
+    wire [7:0] addr = address[7:0];  // Mask to 8 bits (wrap within 256 bytes)
     
     // Initialize memory (optional)
     integer i;
@@ -25,23 +27,22 @@ module DATA_MEM(
     
     // Memory Read Logic
     always @(*) begin
+        read_data = 32'b0;  // Default value (prevents latch)
         if (mem_read) begin
             case(funct3)
                 3'b000: // LB (Load Byte - sign extended)
-                    read_data = {{24{memory[address][7]}}, memory[address]};
+                    read_data = {{24{memory[addr][7]}}, memory[addr]};
                 3'b001: // LH (Load Half - sign extended)
-                    read_data = {{16{memory[address+1][7]}}, memory[address+1], memory[address]};
+                    read_data = {{16{memory[addr+1][7]}}, memory[addr+1], memory[addr]};
                 3'b010: // LW (Load Word)
-                    read_data = {memory[address+3], memory[address+2], memory[address+1], memory[address]};
+                    read_data = {memory[addr+3], memory[addr+2], memory[addr+1], memory[addr]};
                 3'b100: // LBU (Load Byte Unsigned)
-                    read_data = {24'b0, memory[address]};
+                    read_data = {24'b0, memory[addr]};
                 3'b101: // LHU (Load Half Unsigned)
-                    read_data = {16'b0, memory[address+1], memory[address]};
+                    read_data = {16'b0, memory[addr+1], memory[addr]};
                 default:
                     read_data = 32'b0;
             endcase
-        end else begin
-            read_data = 32'b0;
         end
     end
     
@@ -50,11 +51,11 @@ module DATA_MEM(
         if (mem_write) begin
             case(funct3)
                 3'b000: // SB (Store Byte)
-                    memory[address] <= write_data[7:0];
+                    memory[addr] <= write_data[7:0];
                 3'b001: // SH (Store Half)
-                    {memory[address+1], memory[address]} <= write_data[15:0];
+                    {memory[addr+1], memory[addr]} <= write_data[15:0];
                 3'b010: // SW (Store Word)
-                    {memory[address+3], memory[address+2], memory[address+1], memory[address]} <= write_data;
+                    {memory[addr+3], memory[addr+2], memory[addr+1], memory[addr]} <= write_data;
                 default: begin end
             endcase
         end

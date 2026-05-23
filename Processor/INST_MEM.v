@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /* 
 Instruction memory takes in two inputs: A 32-bit Program counter and a 1-bit reset. 
 The memory is initialized when reset is 1.
@@ -8,11 +9,18 @@ module INST_MEM(
     input reset,
     output [31:0] Instruction_Code
 );
-    reg [7:0] Memory [0:127];
+    reg [7:0] Memory [0:4095];
 
-    assign Instruction_Code = {Memory[PC+3], Memory[PC+2], Memory[PC+1], Memory[PC]};
 
-    always @(posedge reset) begin
+        // 1. Mask PC to 12 bits (for 4KB)
+        // 2. Force word-alignment (multiple of 4)
+        wire [11:0] word_addr = {PC[11:2], 2'b00};
+        
+        // Read the 32-bit instruction
+        assign Instruction_Code = {Memory[word_addr+3], Memory[word_addr+2], Memory[word_addr+1], Memory[word_addr]};
+    
+
+    initial begin
         // ADDI x5, x0, 10  (x5 = 10)
         {Memory[3], Memory[2], Memory[1], Memory[0]} = 32'b00000000101000000000001010010011;
         
@@ -38,3 +46,4 @@ module INST_MEM(
         {Memory[31], Memory[30], Memory[29], Memory[28]} = 32'b00000010101000000000010100010011;
     end
 endmodule
+

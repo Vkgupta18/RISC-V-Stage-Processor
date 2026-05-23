@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 A register file can read two registers and write in to one register. 
 The RISC V register file contains total of 32 registers each of size 32-bit. 
@@ -33,52 +34,52 @@ module REG_FILE(
     begin
         // Bear with me for now, I tried using loops, but it won't work
         // Just duct-taping this for now
-         reg_memory[0] = 32'h0;
-         reg_memory[1] = 32'h1;
-         reg_memory[2] = 32'h2;
-         reg_memory[3] = 32'h3;
-         reg_memory[4] = 32'h4;
-         reg_memory[5] = 32'h5;
-         reg_memory[6] = 32'h6;
-         reg_memory[7] = 32'h7;
-         reg_memory[8] = 32'h8;
-         reg_memory[9] = 32'h9;
-         reg_memory[10] = 32'h10;
-         reg_memory[11] = 32'h11;
-         reg_memory[12] = 32'h12;
-         reg_memory[13] = 32'h13;
-         reg_memory[14] = 32'h14;
-         reg_memory[15] = 32'h15;
-         reg_memory[16] = 32'h16;
-         reg_memory[17] = 32'h17;
-         reg_memory[18] = 32'h18;
-         reg_memory[19] = 32'h19;
-         reg_memory[20] = 32'h20;
-         reg_memory[21] = 32'h21;
-         reg_memory[22] = 32'h22;
-         reg_memory[23] = 32'h23;
-         reg_memory[24] = 32'h24;
-         reg_memory[25] = 32'h25;
-		 reg_memory[26] = 32'h26;
-         reg_memory[27] = 32'h27;
-         reg_memory[28] = 32'h28;
-         reg_memory[29] = 32'h29;
-         reg_memory[30] = 32'h30;
-         reg_memory[31] = 32'h31;
+         reg_memory[0] = 32'd0;
+         reg_memory[1] = 32'd1;
+         reg_memory[2] = 32'd2;
+         reg_memory[3] = 32'd3;
+         reg_memory[4] = 32'd4;
+         reg_memory[5] = 32'd5;
+         reg_memory[6] = 32'd6;
+         reg_memory[7] = 32'd7;
+         reg_memory[8] = 32'd8;
+         reg_memory[9] = 32'd9;
+         reg_memory[10] = 32'd10;
+         reg_memory[11] = 32'd11;
+         reg_memory[12] = 32'd12;
+         reg_memory[13] = 32'd13;
+         reg_memory[14] = 32'd14;
+         reg_memory[15] = 32'd15;
+         reg_memory[16] = 32'd16;
+         reg_memory[17] = 32'd17;
+         reg_memory[18] = 32'd18;
+         reg_memory[19] = 32'd19;
+         reg_memory[20] = 32'd20;
+         reg_memory[21] = 32'd21;
+         reg_memory[22] = 32'd22;
+         reg_memory[23] = 32'd23;
+         reg_memory[24] = 32'd24;
+         reg_memory[25] = 32'd25;
+		 reg_memory[26] = 32'd26;
+         reg_memory[27] = 32'd27;
+         reg_memory[28] = 32'd28;
+         reg_memory[29] = 32'd29;
+         reg_memory[30] = 32'd30;
+         reg_memory[31] = 32'd31;
 
     end
 
     // The register file will always output the values corresponding to read register numbers 
     // Register 0 (x0) is hardwired to zero per RISC-V specification
-    assign read_data1 = (read_reg_num1 == 5'b0) ? 32'h0 : reg_memory[read_reg_num1];
-    assign read_data2 = (read_reg_num2 == 5'b0) ? 32'h0 : reg_memory[read_reg_num2];
+    assign read_data1 = (read_reg_num1 == 5'b0) ? 32'd0 : reg_memory[read_reg_num1];
+    assign read_data2 = (read_reg_num2 == 5'b0) ? 32'd0 : reg_memory[read_reg_num2];
 
     // If clock edge is positive and regwrite is 1, we write data to specified register
     // Prevent writes to register 0 (x0 must always be zero)
     always @(posedge clock)
     begin
         if (regwrite && (write_reg != 5'b0)) begin
-            reg_memory[write_reg] = write_data;
+            reg_memory[write_reg] <= write_data;
         end     
     end
 

@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 module CONTROL(
     input [6:0] opcode,
     input [2:0] funct3,
@@ -9,7 +10,8 @@ module CONTROL(
     output reg mem_write,       // New: enable memory write
     output reg mem_to_reg,      // New: 0=ALU result, 1=memory data
     output reg branch,          // New: is branch instruction
-    output reg jump             // New: is jump instruction
+    output reg jump,             // New: is jump instruction
+    output reg alu_pc_src        // New: 1=use PC as ALU input1 (for AUIPC)
 );
 
     // Opcode definitions
@@ -32,6 +34,7 @@ module CONTROL(
         mem_to_reg = 1'b0;
         branch = 1'b0;
         jump = 1'b0;
+        alu_pc_src = 1'b0;
         alu_control = 4'b1111; // Invalid operation
         
         case(opcode)
@@ -118,7 +121,8 @@ module CONTROL(
             AUIPC: begin
                 regwrite = 1'b1;
                 alu_src = 1'b1;
-                alu_control = 4'b1100; // PC + immediate
+                alu_pc_src = 1'b1;           // Use PC as ALU input1
+                alu_control = 4'b0010;       // ADD (PC + immediate)
             end
             
             default: begin

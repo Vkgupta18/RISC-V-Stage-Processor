@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 ALU module, which takes two operands of size 32-bits each and a 4-bit ALU_control as input.
 Operation is performed on the basis of ALU_control value and output is 32-bit ALU_result. 
@@ -41,7 +42,6 @@ module ALU (
         4'b1001: alu_result = (in1 < in2) ? 32'd1 : 32'd0;                    // SLTU (unsigned)
         4'b1010: alu_result = $signed(in1) >>> in2[4:0];                      // SRA (shift right arithmetic)          
         4'b1011: alu_result = in2;                                          // Pass B (for LUI)
-        4'b1100: alu_result = in1 + in2;                                      // PC + imm (for AUIPC)
         default: alu_result = 32'd0;
         endcase
 

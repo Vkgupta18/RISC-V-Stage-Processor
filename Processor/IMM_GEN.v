@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 Immediate Generator extracts and sign-extends immediate values from instructions
 based on instruction type (I, S, B, U, J formats)

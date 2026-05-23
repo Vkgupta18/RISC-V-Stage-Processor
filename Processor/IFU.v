@@ -1,3 +1,4 @@
+	`timescale 1ns/1ps
 /*
 The instruction fetch unit has clock and reset pins as input and 32-bit instruction code as output.
 Internally the block has Instruction Memory, Program Counter(P.C) and an adder to increment counter by 4, 
@@ -20,12 +21,19 @@ module IFU(
 
     INST_MEM instr_mem(PC, reset, Instruction_Code);
 
-    always @(posedge clock) begin
+    always @(posedge clock or posedge reset) begin
         if(reset == 1)
             PC <= 0;
-        else if(jump || branch_taken)
+
+        else if (branch_taken || jump)
             PC <= branch_target;
-        else
-            PC <= PC + 4;
+        else begin
+                // Check for PC overflow (wrap at 4KB boundary)
+                if (PC >= 32'h00000FFC) begin  // 4096 - 4 = 4092 (0xFFC)
+                    PC <= 32'h00000000;  // Wrap around
+                end else begin
+                    PC <= PC + 4;  // Next instruction
+                end
+            end
     end
 endmodule
