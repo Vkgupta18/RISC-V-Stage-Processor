@@ -1,1 +1,12 @@
-Processor.zip
+# Build artifacts
+*.exe
+*.vcd
+*.vvp
+*.out
+*.log
+
+# OS & Editor specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
