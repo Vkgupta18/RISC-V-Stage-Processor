@@ -101,52 +101,52 @@ graph TD
     classDef control fill:#eceff1,stroke:#607d8b,stroke-width:2px;
 
     %% --- Instruction Fetch (IF) ---
-    subgraph IF [IF Stage: Instruction Fetch]
-        PCMux{PC Mux}:::mux
-        PC[Program Counter]:::stageIF
-        Add4[PC + 4]:::stageIF
-        IM[Instruction Memory<br>INST_MEM]:::stageIF
+    subgraph IF ["IF Stage: Instruction Fetch"]
+        PCMux{"PC Mux"}:::mux
+        PC["Program Counter"]:::stageIF
+        Add4["PC + 4"]:::stageIF
+        IM["Instruction Memory<br>INST_MEM"]:::stageIF
     end
 
     %% --- IF/ID Pipeline Register ---
-    IFID[[IF/ID Pipeline Register]]:::pipeReg
+    IFID[["IF/ID Pipeline Register"]]:::pipeReg
 
     %% --- Instruction Decode (ID) ---
-    subgraph ID [ID Stage: Instruction Decode]
-        Control[Control Unit<br>PIPE_CONTROL]:::control
-        RF[Register File<br>REG_FILE]:::stageID
-        ImmGen[Immediate Generator<br>IMM_GEN]:::stageID
+    subgraph ID ["ID Stage: Instruction Decode"]
+        Control["Control Unit<br>PIPE_CONTROL"]:::control
+        RF["Register File<br>REG_FILE"]:::stageID
+        ImmGen["Immediate Generator<br>IMM_GEN"]:::stageID
     end
 
     %% --- ID/EX Pipeline Register ---
-    IDEX[[ID/EX Pipeline Register]]:::pipeReg
+    IDEX[["ID/EX Pipeline Register"]]:::pipeReg
 
     %% --- Execute (EX) ---
-    subgraph EX [EX Stage: Execute]
-        HazardU[Hazard Detection Unit<br>HAZARD_DETECTION]:::control
-        FwdU[Forwarding Unit<br>FORWARDING_UNIT]:::control
-        FwdMuxA{Fwd Mux A}:::mux
-        FwdMuxB{Fwd Mux B}:::mux
-        ALUMux1{ALU Mux 1}:::mux
-        ALUMux2{ALU Mux 2}:::mux
-        ALU[ALU]:::stageEX
-        BranchU[Branch Unit<br>BRANCH_UNIT]:::stageEX
+    subgraph EX ["EX Stage: Execute"]
+        HazardU["Hazard Detection Unit<br>HAZARD_DETECTION"]:::control
+        FwdU["Forwarding Unit<br>FORWARDING_UNIT"]:::control
+        FwdMuxA{"Fwd Mux A"}:::mux
+        FwdMuxB{"Fwd Mux B"}:::mux
+        ALUMux1{"ALU Mux 1"}:::mux
+        ALUMux2{"ALU Mux 2"}:::mux
+        ALU["ALU"]:::stageEX
+        BranchU["Branch Unit<br>BRANCH_UNIT"]:::stageEX
     end
 
     %% --- EX/MEM Pipeline Register ---
-    EXMEM[[EX/MEM Pipeline Register]]:::pipeReg
+    EXMEM[["EX/MEM Pipeline Register"]]:::pipeReg
 
     %% --- Memory Access (MEM) ---
-    subgraph MEM [MEM Stage: Memory Access]
-        DM[Data Memory<br>DATA_MEM]:::stageMEM
+    subgraph MEM ["MEM Stage: Memory Access"]
+        DM["Data Memory<br>DATA_MEM"]:::stageMEM
     end
 
     %% --- MEM/WB Pipeline Register ---
-    MEMWB[[MEM/WB Pipeline Register]]:::pipeReg
+    MEMWB[["MEM/WB Pipeline Register"]]:::pipeReg
 
     %% --- Write Back (WB) ---
-    subgraph WB [WB Stage: Write Back]
-        WBMux{Write Back Mux}:::mux
+    subgraph WB ["WB Stage: Write Back"]
+        WBMux{"Write Back Mux"}:::mux
     end
 
     %% ==============================
@@ -154,82 +154,82 @@ graph TD
     %% ==============================
     
     %% IF Connections
-    PCMux -->|PC_next| PC
-    PC -->|PC| IM
-    PC -->|PC| Add4
-    Add4 -->|PC+4| PCMux
-    IM -->|Instruction| IFID
-    PC -->|PC| IFID
+    PCMux -->|"PC_next"| PC
+    PC -->|"PC"| IM
+    PC -->|"PC"| Add4
+    Add4 -->|"PC+4"| PCMux
+    IM -->|"Instruction"| IFID
+    PC -->|"PC"| IFID
 
     %% IF/ID to ID Connections
-    IFID -->|Instruction| Control
-    IFID -->|rs1, rs2| RF
-    IFID -->|Instruction| ImmGen
+    IFID -->|"Instruction"| Control
+    IFID -->|"rs1, rs2"| RF
+    IFID -->|"Instruction"| ImmGen
     
     %% ID to ID/EX Connections
-    RF -->|rs1_data, rs2_data| IDEX
-    ImmGen -->|Immediate| IDEX
-    Control -->|Control Signals| IDEX
-    IFID -->|PC| IDEX
-    IFID -->|rd, rs1, rs2| IDEX
+    RF -->|"rs1_data, rs2_data"| IDEX
+    ImmGen -->|"Immediate"| IDEX
+    Control -->|"Control Signals"| IDEX
+    IFID -->|"PC"| IDEX
+    IFID -->|"rd, rs1, rs2"| IDEX
     
     %% ID/EX to EX Connections
-    IDEX -.->|rs1, rs2, rd| FwdU
-    IDEX -->|rs1_data| FwdMuxA
-    IDEX -->|rs2_data| FwdMuxB
+    IDEX -.->|"rs1, rs2, rd"| FwdU
+    IDEX -->|"rs1_data"| FwdMuxA
+    IDEX -->|"rs2_data"| FwdMuxB
     
-    FwdMuxA -->|ex_alu_in1_fwd| ALUMux1
-    FwdMuxB -->|ex_rs2_fwd| ALUMux2
+    FwdMuxA -->|"ex_alu_in1_fwd"| ALUMux1
+    FwdMuxB -->|"ex_rs2_fwd"| ALUMux2
     
-    IDEX -->|PC| ALUMux1
-    IDEX -->|Immediate| ALUMux2
+    IDEX -->|"PC"| ALUMux1
+    IDEX -->|"Immediate"| ALUMux2
     
-    ALUMux1 -->|in1| ALU
-    ALUMux2 -->|in2| ALU
-    ALU -->|ALU Result| EXMEM
+    ALUMux1 -->|"in1"| ALU
+    ALUMux2 -->|"in2"| ALU
+    ALU -->|"ALU Result"| EXMEM
     
-    IDEX -->|PC, Immediate| BranchU
-    FwdMuxA -->|fwd_rs1_data| BranchU
-    ALU -->|Zero Flag, ALU Result| BranchU
-    BranchU -->|Branch Target, Taken| PCMux
+    IDEX -->|"PC, Immediate"| BranchU
+    FwdMuxA -->|"fwd_rs1_data"| BranchU
+    ALU -->|"Zero Flag, ALU Result"| BranchU
+    BranchU -->|"Branch Target, Taken"| PCMux
     
-    FwdU -->|forward_A| FwdMuxA
-    FwdU -->|forward_B| FwdMuxB
+    FwdU -->|"forward_A"| FwdMuxA
+    FwdU -->|"forward_B"| FwdMuxB
     
-    FwdMuxB -->|Forwarded rs2_data| EXMEM
-    IDEX -->|Control Signals, rd| EXMEM
+    FwdMuxB -->|"Forwarded rs2_data"| EXMEM
+    IDEX -->|"Control Signals, rd"| EXMEM
     
     %% EX/MEM to MEM Connections
-    EXMEM -->|ALU Result (Addr)| DM
-    EXMEM -->|rs2_data (Write Data)| DM
+    EXMEM -->|"ALU Result (Addr)"| DM
+    EXMEM -->|"rs2_data (Write Data)"| DM
     
     %% MEM to MEM/WB Connections
-    DM -->|Read Data| MEMWB
-    EXMEM -->|ALU Result| MEMWB
-    EXMEM -->|PC| MEMWB
-    EXMEM -->|Control Signals, rd| MEMWB
+    DM -->|"Read Data"| MEMWB
+    EXMEM -->|"ALU Result"| MEMWB
+    EXMEM -->|"PC"| MEMWB
+    EXMEM -->|"Control Signals, rd"| MEMWB
     
     %% MEM/WB to WB Connections
-    MEMWB -->|Read Data| WBMux
-    MEMWB -->|ALU Result| WBMux
-    MEMWB -->|PC + 4| WBMux
+    MEMWB -->|"Read Data"| WBMux
+    MEMWB -->|"ALU Result"| WBMux
+    MEMWB -->|"PC + 4"| WBMux
     
     %% WB feedback to ID (Register File)
-    WBMux -->|wb_write_data| RF
-    MEMWB -->|wb_rd| RF
-    MEMWB -->|wb_regwrite| RF
+    WBMux -->|"wb_write_data"| RF
+    MEMWB -->|"wb_rd"| RF
+    MEMWB -->|"wb_regwrite"| RF
     
     %% Forwarding feedback loops
-    EXMEM -.->|ex_mem_alu_result, rd| FwdU
-    MEMWB -.->|wb_write_data, rd| FwdU
+    EXMEM -.->|"ex_mem_alu_result, rd"| FwdU
+    MEMWB -.->|"wb_write_data, rd"| FwdU
     
     %% Hazard Detection Connections (Dashed to separate from datapath)
-    IFID -.->|if_id_rs1, if_id_rs2| HazardU
-    IDEX -.->|id_ex_rd, MemRead| HazardU
-    BranchU -.->|Branch/Jump Taken| HazardU
-    HazardU -.->|Stall| PC
-    HazardU -.->|Stall, Flush| IFID
-    HazardU -.->|Flush| IDEX
+    IFID -.->|"if_id_rs1, if_id_rs2"| HazardU
+    IDEX -.->|"id_ex_rd, MemRead"| HazardU
+    BranchU -.->|"Branch/Jump Taken"| HazardU
+    HazardU -.->|"Stall"| PC
+    HazardU -.->|"Stall, Flush"| IFID
+    HazardU -.->|"Flush"| IDEX
 ```
 
 ---
